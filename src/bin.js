@@ -23,29 +23,34 @@ const argv = require('yargs')
     type: 'number',
     default: 5236
   })
-  .option('branch', {
-    describe: 'Branch to fetch artifacts for',
+  .option('url', {
+    describe: 'GitLab Instance URL',
     type: 'string',
-    required: true
-  })
-  .option('tag', {
-    describe: 'Fetch tags instead of branches',
-    type: 'boolean'
+    default: 'https://gitlab.com'
   })
   .option('token', {
     describe: 'Private access token',
     type: 'string',
     required: true
   })
-  .option('url', {
-    describe: 'GitLab Instance URL',
-    type: 'string',
-    default: 'https://gitlab.com'
-  })
   .option('project', {
     describe: 'GitLab Project ID',
     type: 'string',
     required: true
+  })
+  .option('branch', {
+    describe: 'Branch to fetch artifacts for',
+    type: 'string',
+    required: true
+  })
+  .option('job', {
+    describe: 'Name of job that produces the artifacts',
+    type: 'string',
+    required: true
+  })
+  .option('tag', {
+    describe: 'Fetch tags instead of branches',
+    type: 'boolean'
   })
   .option('webhook', {
     describe: 'Enable /checkUpdate route with webhook X-Secret header',
@@ -66,7 +71,8 @@ const config = {
     branch: argv.branch,
     tags: argv.tag,
     project: argv.project,
-    webhook: argv.webhook
+    webhook: argv.webhook,
+    job: argv.job
   }
 }
 

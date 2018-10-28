@@ -27,7 +27,7 @@ const init = async (config) => {
     method: 'GET',
     path: '/{param*}',
     handler: async (request, h) => {
-      const latestDir = await artifacts.latestDir()
+      const latestDir = await artifacts.getLatestDir()
       let p = path.join(latestDir, request.path)
       return h.file(p, {confine: false})
     }

@@ -6,9 +6,12 @@ const fs = require('fs')
 const mkdirp = require('mkdirp').sync
 const rimraf = require('rimraf').sync
 
+const debug = require('debug')
+const log = debug('gitlab-artifacts-server:artifacts')
+
 const TMP = path.join(os.tmpdir(), 'gitlab-artifacts-server')
 
-module.exports = (api, {project, branch}) => {
+module.exports = (api, {project, branch, job}) => {
   const tmp = path.join(TMP, project)
   mkdirp(tmp)
 
@@ -16,19 +19,29 @@ module.exports = (api, {project, branch}) => {
   let latestDir
 
   const main = async () => {
-    const latest = await api.getSuccessJobByBranch(project, branch)
-    if (!latest) {
-      throw new Error('No job found! Check if you had any successfull pipelines for ' + branch + '!')
+    log('getting latest')
+    const pipe = await api.getSuccessPipelineByBranch(project, branch)
+    if (!pipe) {
+      throw new Error('No pipeline found! Check if you had any successfull pipelines for ' + branch + '!')
     }
-    const out = path.join(tmp, latest.id)
+    const latest = await api.getSuccessJobsByPipeline(project, pipe.id, job)
+    if (!latest) {
+      throw new Error('No job found! Check if you had any successfull job named ' + job + ' for ' + pipe.id + '!')
+    }
+    const out = path.join(tmp, String(latest.id))
     if (fs.existsSync(path.join(out, 'ok'))) {
+      log('already up-to-date')
       return // up-to-date
     }
 
     await api.downloadArtifacts(project, latest, out) // dl and extract
 
-    fs.readdirSync(tmp).filter(dir => dir !== String(latest.id)).forEach(dir => rimraf(path.join(tmp, dir))) // rm old
+    fs.readdirSync(tmp).filter(dir => dir !== String(latest.id)).forEach(dir => {
+      log('cleanup old', dir)
+      rimraf(path.join(tmp, dir))
+    }) // rm old
 
+    log('newest is %s', out)
     latestDir = out
   }
 
@@ -38,9 +51,14 @@ module.exports = (api, {project, branch}) => {
         return mainProm
       } else {
         mainProm = main()
-        const res = await mainProm
+        let mp = mainProm
+        try {
+          await mainProm
+        } catch (e) {
+          // silently ignore error, will re-throw below
+        }
         mainProm = null
-        return res
+        return mp
       }
     },
     waitForMain: async () => {

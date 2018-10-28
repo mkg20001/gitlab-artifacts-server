@@ -12,15 +12,24 @@ const apiClient = ({url, token}) => {
     apiUrl = url + '/api/v4' + apiUrl
     if (!opt) opt = {}
     opt.headers = {'PRIVATE-TOKEN': token}
-    return fetch(apiUrl)
+    log('call %o', apiUrl)
+    return fetch(apiUrl, opt)
   }
 
   return {
-    getSuccessJobByBranch: async (pid, branch) => {
-      log('getting success jobs by branch %s', branch)
-      let res = await doCall('/projects/' + pid + '/jobs?ref=' + branch + '&per_page=1&scope=success')
+    getSuccessPipelineByBranch: async (pid, branch) => {
+      log('getting success pipelines for %s, branch=%s', pid, branch)
+      let res = await doCall('/projects/' + pid + '/pipelines?ref=' + branch + '&per_page=1&status=success')
       res = await res.json()
+      if (res.error) throw new Error(res.error)
       return res[0]
+    },
+    getSuccessJobsByPipeline: async (pid, pipeId, jobName) => {
+      log('getting success jobs for %s, pipeline=%s', pid, pipeId)
+      let res = await doCall('/projects/' + pid + '/pipelines/' + pipeId + '/jobs?per_page=1&scope=success')
+      res = await res.json()
+      if (res.error) throw new Error(res.error)
+      return res.filter(res => res.name === jobName)[0]
     },
     downloadArtifacts: async (pid, job, out) => {
       log('downloading and extracting artifacts file for %s to %s', job.id, out)
