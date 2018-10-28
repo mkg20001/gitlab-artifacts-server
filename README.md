@@ -4,6 +4,10 @@ A simple server that serves artifacts for a specific branch of a project
 
 ## Usage
 
+Example: `$ gitlab-ci-server --token YOURTOKENHERE --project 13083 --branch master --job compile-assets`
+
+This fetches the compile-assets artifact from the gitlab repo's master branch
+
 ```
 Options:
   --help      Show help                                                [boolean]
