@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "A simple server that serves artifacts for a specific branch of a project",
   "main": "index.js",
+  "bin": {
+    "gitlab-artifacts-server": "src/bin.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

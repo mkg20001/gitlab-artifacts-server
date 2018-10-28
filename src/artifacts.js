@@ -22,7 +22,7 @@ module.exports = (api, {project, branch}) => {
     }
     const out = path.join(tmp, latest.id)
     if (fs.existsSync(path.join(out, 'ok'))) {
-      return out // up-to-date
+      return // up-to-date
     }
 
     await api.downloadArtifacts(project, latest, out) // dl and extract
@@ -30,10 +30,9 @@ module.exports = (api, {project, branch}) => {
     fs.readdirSync(tmp).filter(dir => dir !== String(latest.id)).forEach(dir => rimraf(path.join(tmp, dir))) // rm old
 
     latestDir = out
-    return out
   }
 
-  return {
+  const A = {
     main: async () => {
       if (mainProm) {
         return mainProm
@@ -48,6 +47,17 @@ module.exports = (api, {project, branch}) => {
       if (mainProm) {
         await mainProm
       }
+    },
+    getLatestDir: async () => {
+      if (!latestDir) {
+        await A.main()
+      } else {
+        await A.waitForMain()
+      }
+
+      return latestDir
     }
   }
+
+  return A
 }

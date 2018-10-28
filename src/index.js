@@ -3,14 +3,16 @@
 const Hapi = require('hapi')
 const Joi = require('joi')
 const pino = require('pino')
-const log = pino({name: 'gitlab-artifacts-server'})
 const path = require('path')
+const log = pino({name: 'gitlab-artifacts-server'})
 
 const APIClient = require('./api')
+const Artifacts = require('./artifacts')
 
 const init = async (config) => {
   const server = Hapi.server(config.hapi)
   const api = APIClient(config.gitlab)
+  const artifacts = Artifacts(api, config.artifacts)
 
   await server.register({
     plugin: require('hapi-pino'),
@@ -21,13 +23,23 @@ const init = async (config) => {
     plugin: require('inert')
   })
 
+  server.route({
+    method: 'GET',
+    path: '/{param*}',
+    handler: async (request, h) => {
+      const latestDir = await artifacts.latestDir()
+      let p = path.join(latestDir, request.path)
+      return h.file(p, {confine: false})
+    }
+  })
+
   if (config.artifacts.webhook) {
     server.route({
       method: 'GET',
       path: '/checkUpdate',
       config: {
         handler: async (h, request) => {
-          await artifacts.checkUpdate()
+          await artifacts.main()
         },
         validate: {
           headers: {
