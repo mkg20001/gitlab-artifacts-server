@@ -1,0 +1,17 @@
+name: gitlab-artifacts-server
+version: 0.1.0
+summary: A simple server that serves artifacts for a specific branch of a project
+description: A simple server that serves artifacts for a specific branch of a project
+confinement: strict
+grade: stable
+
+apps:
+  gitlab-artifacts-server:
+    command: gitlab-artifacts-server
+    plugs: [network, network-bind]
+
+parts:
+  gitlab-artifacts-server:
+    plugin: nodejs
+    node-engine: 10.12.0
+    source: .
