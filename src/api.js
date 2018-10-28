@@ -42,8 +42,6 @@ const apiClient = ({url, token}) => {
 
       let res = await doCall('/projects/' + pid + '/jobs/' + job.id + '/artifacts')
       return new Promise((resolve, reject) => {
-        // const dest = fs.createWriteStream(outfile)
-
         res.body.on('error', (err) => {
           reject(err)
         })
@@ -57,16 +55,6 @@ const apiClient = ({url, token}) => {
             })
             .on('error', reject)
         )
-
-        /* dest.on('finish', () => {
-          log('finished download')
-          resolve(outfile)
-        })
-        dest.on('error', (err) => {
-          reject(err)
-        })
-
-        res.body.pipe(dest) */
       })
     }
   }

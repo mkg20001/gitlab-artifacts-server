@@ -11,12 +11,17 @@ const log = debug('gitlab-artifacts-server:artifacts')
 
 const TMP = path.join(os.tmpdir(), 'gitlab-artifacts-server')
 
-module.exports = (api, {project, branch, job}) => {
+module.exports = (api, {project, branch, job, interval}) => {
   const tmp = path.join(TMP, project)
   mkdirp(tmp)
 
   let mainProm
   let latestDir
+
+  setInterval(() => {
+    log('scheudling re-check')
+    latestDir = null
+  }, interval)
 
   const main = async () => {
     log('getting latest')
@@ -31,9 +36,11 @@ module.exports = (api, {project, branch, job}) => {
     const out = path.join(tmp, String(latest.id))
     if (fs.existsSync(path.join(out, 'ok'))) {
       log('already up-to-date')
+      latestDir = out
       return // up-to-date
     }
 
+    log('update required')
     await api.downloadArtifacts(project, latest, out) // dl and extract
 
     fs.readdirSync(tmp).filter(dir => dir !== String(latest.id)).forEach(dir => {

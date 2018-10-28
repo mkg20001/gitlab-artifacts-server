@@ -4,14 +4,6 @@
 
 'use strict'
 
-/*
---branch name of branch, default master
---tag use tags instead of branches
---token private access token, required
---project gitlab project id, required
---webhook enable '/checkUpdate' with 'X-Secret' header
-*/
-
 const argv = require('yargs')
   .option('host', {
     describe: 'Host to listen on',
@@ -56,6 +48,11 @@ const argv = require('yargs')
     describe: 'Enable /checkUpdate route with webhook X-Secret header',
     type: 'string'
   })
+  .option('interval', {
+    describe: 'Interval to check for updates',
+    type: 'number',
+    default: 3600 * 1000
+  })
   .argv
 
 const config = {
@@ -72,7 +69,8 @@ const config = {
     tags: argv.tag,
     project: argv.project,
     webhook: argv.webhook,
-    job: argv.job
+    job: argv.job,
+    interval: argv.interval
   }
 }
 
@@ -82,5 +80,5 @@ init(config).catch(e => {
   console.error('A fatal error has occured! Application has been terminated!')
   console.error('')
   console.error(e.stack)
-  process.exit(1) // TODO: raven catch uncaught call
+  process.exit(1)
 })
