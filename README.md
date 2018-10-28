@@ -2,6 +2,12 @@
 
 A simple server that serves artifacts for a specific branch of a project
 
+## Installation
+
+Install it with `npm i -g gitlab-artifacts-server` or as a snap with `snap install gitlab-artifacts-server`
+
+No db required! Batteries included! Just launch and forget!
+
 ## Usage
 
 Example: `$ gitlab-ci-server --token YOURTOKENHERE --project 13083 --branch master --job compile-assets`
