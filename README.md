@@ -1,6 +1,6 @@
 # gitlab-artifacts-server
 
-A simple server that service artifacts for a specific branch of a project
+A simple server that serves artifacts for a specific branch of a project
 
 ## Usage
 

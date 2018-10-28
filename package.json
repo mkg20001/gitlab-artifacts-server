@@ -1,7 +1,7 @@
 {
   "name": "gitlab-artifacts-server",
   "version": "0.0.1",
-  "description": "A simple server that service artifacts for a specific branch of a project",
+  "description": "A simple server that serves artifacts for a specific branch of a project",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,5 +21,14 @@
     "node-fetch": "^2.2.0",
     "rimraf": "^2.6.2",
     "yargs": "^12.0.2"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mkg20001/gitlab-artifacts-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mkg20001/gitlab-artifacts-server/issues"
+  },
+  "homepage": "https://github.com/mkg20001/gitlab-artifacts-server#readme"
 }
