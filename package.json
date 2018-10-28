@@ -1,0 +1,25 @@
+{
+  "name": "gitlab-artifacts-server",
+  "version": "0.0.1",
+  "description": "A simple server that service artifacts for a specific branch of a project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "gitlab",
+    "artifacts",
+    "server"
+  ],
+  "author": "Maciej Krüger <mkg20001@gmail.com>",
+  "license": "MPL-2.0",
+  "dependencies": {
+    "hapi": "^17.6.0",
+    "hapi-pino": "^5.1.0",
+    "inert": "^5.1.0",
+    "mkdirp": "^0.5.1",
+    "node-fetch": "^2.2.0",
+    "rimraf": "^2.6.2",
+    "yargs": "^12.0.2"
+  }
+}
