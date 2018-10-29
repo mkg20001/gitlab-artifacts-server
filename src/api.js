@@ -16,19 +16,27 @@ const apiClient = ({url, token}) => {
     return fetch(apiUrl, opt)
   }
 
+  const handleGLError = (res) => {
+    let msg = res.error || res.message
+
+    if (msg) {
+      throw new Error('GitLab API Error: ' + JSON.stringify(msg) + ' - Check token and project ID!')
+    }
+  }
+
   return {
     getSuccessPipelineByBranch: async (pid, branch) => {
       log('getting success pipelines for %s, branch=%s', pid, branch)
       let res = await doCall('/projects/' + pid + '/pipelines?ref=' + branch + '&per_page=1&status=success')
       res = await res.json()
-      if (res.error) throw new Error(res.error)
+      handleGLError(res)
       return res[0]
     },
     getSuccessJobsByPipeline: async (pid, pipeId, jobName) => {
       log('getting success jobs for %s, pipeline=%s', pid, pipeId)
-      let res = await doCall('/projects/' + pid + '/pipelines/' + pipeId + '/jobs?per_page=1&scope=success')
+      let res = await doCall('/projects/' + pid + '/pipelines/' + pipeId + '/jobs?scope=success')
       res = await res.json()
-      if (res.error) throw new Error(res.error)
+      handleGLError(res)
       return res.filter(res => res.name === jobName)[0]
     },
     downloadArtifacts: async (pid, job, out) => {

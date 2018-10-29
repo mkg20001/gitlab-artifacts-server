@@ -2,6 +2,7 @@
 
 const Hapi = require('hapi')
 const Joi = require('joi')
+const Boom = require('boom')
 const pino = require('pino')
 const path = require('path')
 const log = pino({name: 'gitlab-artifacts-server'})
@@ -27,7 +28,13 @@ const init = async (config) => {
     method: 'GET',
     path: '/{param*}',
     handler: async (request, h) => {
-      const latestDir = await artifacts.getLatestDir()
+      let latestDir
+      try {
+        latestDir = await artifacts.getLatestDir()
+      } catch (e) {
+        log.error(e)
+        return Boom.boomify(e, {statusCode: 503})
+      }
       let p = path.join(latestDir, request.path)
       return h.file(p, {confine: false})
     }
@@ -39,11 +46,20 @@ const init = async (config) => {
       path: '/checkUpdate',
       config: {
         handler: async (h, request) => {
-          await artifacts.main()
+          try {
+            await artifacts.main()
+          } catch (e) {
+            log.error(e)
+            return {
+              statusCode: 500,
+              error: 'Internal Server Error',
+              message: e.toString()
+            }
+          }
         },
         validate: {
           headers: {
-            'x-secret': Joi.string().regex(new RegExp('^' + config.artifacts.webhook + '$'))
+            'x-secret': Joi.string().required().regex(new RegExp('^' + config.artifacts.webhook + '$'))
           },
           options: {
             allowUnknown: true

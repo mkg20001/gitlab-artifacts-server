@@ -31,7 +31,7 @@ module.exports = (api, {project, branch, job, interval}) => {
     }
     const latest = await api.getSuccessJobsByPipeline(project, pipe.id, job)
     if (!latest) {
-      throw new Error('No job found! Check if you had any successfull job named ' + job + ' for ' + pipe.id + '!')
+      throw new Error('No job found! Check if you had any successfull job named ' + job + ' for pipeline #' + pipe.id + '!')
     }
     const out = path.join(tmp, String(latest.id))
     if (fs.existsSync(path.join(out, 'ok'))) {
