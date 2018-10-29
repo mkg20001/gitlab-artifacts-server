@@ -1,6 +1,6 @@
 {
   "name": "gitlab-artifacts-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A simple server that serves artifacts for a specific branch of a project",
   "main": "src/index.js",
   "bin": {
