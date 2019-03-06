@@ -7,7 +7,7 @@
     "gitlab-artifacts-server": "src/bin.js"
   },
   "scripts": {
-    "test": "mocha test/**/*.js"
+    "test": "cd test && bash test.sh"
   },
   "keywords": [
     "gitlab",
@@ -27,10 +27,7 @@
     "unzip-stream": "^0.3.0",
     "yargs": "^13.2.1"
   },
-  "devDependencies": {
-    "http-server": "^0.11.1",
-    "mocha": "^5.2.0"
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mkg20001/gitlab-artifacts-server.git"
