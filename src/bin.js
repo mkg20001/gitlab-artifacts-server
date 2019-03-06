@@ -4,27 +4,7 @@
 
 'use strict'
 
-const argv = require('yargs')
-  .option('host', {
-    describe: 'Host to listen on',
-    type: 'string',
-    default: '::'
-  })
-  .option('port', {
-    describe: 'Port to listen on',
-    type: 'number',
-    default: 5236
-  })
-  .option('url', {
-    describe: 'GitLab Instance URL',
-    type: 'string',
-    default: 'https://gitlab.com'
-  })
-  .option('token', {
-    describe: 'Private access token',
-    type: 'string',
-    required: true
-  })
+const projectOptions = (yargs) => yargs
   .option('project', {
     describe: 'GitLab Project ID',
     type: 'string',
@@ -66,7 +46,48 @@ const argv = require('yargs')
     type: 'number',
     default: 3600 * 1000
   })
-  .argv
+
+const mainOptions = (yargs) => yargs
+  .option('host', {
+    describe: 'Host to listen on',
+    type: 'string',
+    default: '::'
+  })
+  .option('port', {
+    describe: 'Port to listen on',
+    type: 'number',
+    default: 5236
+  })
+  .option('url', {
+    describe: 'GitLab Instance URL',
+    type: 'string',
+    default: 'https://gitlab.com'
+  })
+  .option('token', {
+    describe: 'Private access token',
+    type: 'string',
+    required: true
+  })
+
+let argv = projectOptions(mainOptions(require('yargs'))).argv
+
+const structureProjectOptions = (argv) => {
+  return {
+    artifactConfig: {
+      path: argv.path,
+      branch: argv.branch,
+      tags: argv.tag,
+      project: argv.project,
+      webhook: argv.webhook,
+      job: argv.job,
+      interval: argv.interval
+    },
+    accessConfig: {
+      prefix: argv.prefix,
+      token: argv.accessToken
+    }
+  }
+}
 
 const config = {
   hapi: {
@@ -77,23 +98,15 @@ const config = {
     url: argv.url,
     token: argv.token
   },
-  artifacts: [
-    {
-      artifactConfig: {
-        path: argv.path,
-        branch: argv.branch,
-        tags: argv.tag,
-        project: argv.project,
-        webhook: argv.webhook,
-        job: argv.job,
-        interval: argv.interval
-      },
-      accessConfig: {
-        prefix: argv.prefix,
-        token: argv.accessToken
-      }
-    }
-  ]
+  artifacts: []
+}
+
+let lastLen
+config.artifacts.push(structureProjectOptions(argv))
+while (argv._ && argv._.length && lastLen !== argv._.length) {
+  lastLen = argv._.length
+  argv = projectOptions(require('yargs')(argv._)).argv
+  config.artifacts.push(structureProjectOptions(argv))
 }
 
 const init = require('.')

@@ -28,7 +28,10 @@ const init = async (config) => {
 
     const b64accessAuth = accessConfig.token ? Buffer.from(accessConfig.token + ':').toString('base64') : false
     const b64webhookAuth = accessConfig.webhook ? Buffer.from(accessConfig.webhook + ':').toString('base64') : false
-    const prefix = accessConfig.prefix || '/'
+    let prefix = accessConfig.prefix || '/'
+
+    if (!prefix.startsWith('/')) { prefix = '/' + prefix }
+    if (!prefix.endsWith('/')) { prefix += '/' }
 
     server.route({
       method: 'GET',
@@ -66,6 +69,7 @@ const init = async (config) => {
 
             try {
               await artifacts.main()
+              return {ok: true}
             } catch (e) {
               log.error(e)
               return {

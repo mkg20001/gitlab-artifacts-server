@@ -3,6 +3,7 @@
 TEST=$(dirname $(readlink -f 0))
 MAIN=$(dirname "$TEST")
 SRC="$MAIN/src"
+TOKEN="$RANDOM$RANDOM$RANDOM$$"
 
 mock_start() {
   node "$TEST/fake-gitlab/mock.js" & pid=$!
@@ -28,24 +29,86 @@ gla_get() {
   curl -s "http://localhost:5236/$1" "$@"
 }
 
+gla_get_tok() {
+  curl -s "http://$TOKEN@localhost:5236/$1" "$@"
+}
+
 fail() {
   echo
-  echo "==========================!=========================="
+  echo "===============================!==============================="
   echo "Test failure: $1"
-  echo "==========================!=========================="
+  echo "===============================!==============================="
   echo
+  mock_stop
+  gla_reset
   exit 2
+}
+
+r() {
+  echo
+  echo "==="
+  echo "======"
+  echo "========="
+  echo "Running Test: $*"
+  echo "========="
+  echo "======"
+  echo "==="
+  echo
 }
 
 {
   mock_stop
   mock_start
 
+  r "Normal fetch"
   gla_reset
   gla_spawn --project 10901641 --branch master --job build
   RES=$(gla_get test.txt)
   if [ "$RES" != "helloworld" ]; then
     fail "test.txt didn't have expected value 'helloworld'"
+  fi
+
+  r "Fetch with prefix"
+  gla_reset
+  gla_spawn --project 10901641 --branch master --job build --prefix /hello
+  RES=$(gla_get hello/test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+
+  r "Fetch with 2 prefixes"
+  gla_reset
+  gla_spawn --project 10901641 --branch master --job build --prefix /hello -- \
+    --project 10901641 --branch master --job build --prefix /bye
+  RES=$(gla_get hello/test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+  RES=$(gla_get bye/test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+
+  r "Fetch with 2 prefixes, one root"
+  gla_reset
+  gla_spawn --project 10901641 --branch master --job build --prefix /hello -- \
+    --project 10901641 --branch master --job build --prefix /
+  RES=$(gla_get hello/test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+  RES=$(gla_get test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+
+  r "Webhook"
+  gla_reset
+  gla_spawn --project 10901641 --branch master --job build --webhook "$TOKEN"
+  gla_get_tok checkUpdate
+  RES=$(gla_get_tok checkUpdate)
+  if [ "$RES" != '{"ok":true}' ]; then
+    fail "test.txt didn't have expected value 'ok: true'"
   fi
 
   echo
