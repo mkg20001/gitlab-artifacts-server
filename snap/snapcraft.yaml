@@ -13,5 +13,5 @@ apps:
 parts:
   gitlab-artifacts-server:
     plugin: nodejs
-    node-engine: 10.12.0
+    node-engine: 10.15.1
     source: .
