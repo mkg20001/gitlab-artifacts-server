@@ -35,5 +35,8 @@
   "bugs": {
     "url": "https://github.com/mkg20001/gitlab-artifacts-server/issues"
   },
-  "homepage": "https://github.com/mkg20001/gitlab-artifacts-server#readme"
+  "homepage": "https://github.com/mkg20001/gitlab-artifacts-server#readme",
+  "files": [
+    "src"
+  ]
 }
