@@ -3,6 +3,9 @@
 const Hapi = require('hapi')
 const path = require('path')
 
+require('colors')
+const log = (...a) => console.log('%s', '[MOCK]'.grey.bold, ...a.map(l => l.grey)) // eslint-disable-line no-console
+
 const init = async (config) => {
   const server = Hapi.server({host: '::', port: 5382})
 
@@ -16,7 +19,7 @@ const init = async (config) => {
     config: {
       handler: async (request, h) => {
         const file = path.join(__dirname, (request.url.pathname + request.url.search).replace('/', '').replace(/[^a-z0-9]/gm, '_'))
-        console.log('Serving', file)
+        log('Serving', file)
         return h.file(file, {confine: false})
       }
     }
@@ -25,4 +28,4 @@ const init = async (config) => {
   await server.start()
 }
 
-init()
+init().then(() => log('Mock ready'), console.error) // eslint-disable-line no-console

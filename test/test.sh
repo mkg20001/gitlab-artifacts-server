@@ -14,7 +14,7 @@ mock_stop() {
 }
 
 gla_spawn() {
-  "$SRC/bin.js" --token TEST --url http://localhost:5236 "$@" & pid=$!
+  "$SRC/bin.js" --token TEST --url http://localhost:5382 "$@" & pid=$!
   echo "$pid" > /tmp/gla.pid
   sleep 1s
 }
@@ -25,14 +25,32 @@ gla_reset() {
 }
 
 gla_get() {
-  curl "http://localhost:5236/$1" "$@"
+  curl -s "http://localhost:5236/$1" "$@"
 }
 
-mock_stop
-mock_start
+fail() {
+  echo
+  echo "==========================!=========================="
+  echo "Test failure: $1"
+  echo "==========================!=========================="
+  echo
+  exit 2
+}
 
-gla_reset
-gla_spawn --project 13083 --branch master --job compile-assets
-gla_get test.txt
+{
+  mock_stop
+  mock_start
 
-mock_stop
+  gla_reset
+  gla_spawn --project 10901641 --branch master --job build
+  RES=$(gla_get test.txt)
+  if [ "$RES" != "helloworld" ]; then
+    fail "test.txt didn't have expected value 'helloworld'"
+  fi
+
+  echo
+  echo "OK"
+
+  gla_reset
+  mock_stop
+} | pino-pretty
