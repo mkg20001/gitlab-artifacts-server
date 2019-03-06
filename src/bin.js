@@ -48,6 +48,19 @@ const argv = require('yargs')
     describe: 'Enable /checkUpdate route with webhook X-Secret header',
     type: 'string'
   })
+  .option('prefix', {
+    describe: 'Prefix to append to URL (allows serving multiple projects over one instance)',
+    type: 'string',
+    default: '/'
+  })
+  .option('access-token', {
+    describe: 'Basic authentication token required for access',
+    type: 'string'
+  })
+  .option('path', {
+    describe: 'Path to load from artifact',
+    type: 'string'
+  })
   .option('interval', {
     describe: 'Interval to check for updates',
     type: 'number',
@@ -64,14 +77,23 @@ const config = {
     url: argv.url,
     token: argv.token
   },
-  artifacts: {
-    branch: argv.branch,
-    tags: argv.tag,
-    project: argv.project,
-    webhook: argv.webhook,
-    job: argv.job,
-    interval: argv.interval
-  }
+  artifacts: [
+    {
+      artifactConfig: {
+        path: argv.path,
+        branch: argv.branch,
+        tags: argv.tag,
+        project: argv.project,
+        webhook: argv.webhook,
+        job: argv.job,
+        interval: argv.interval
+      },
+      accessConfig: {
+        prefix: argv.prefix,
+        token: argv.accessToken
+      }
+    }
+  ]
 }
 
 const init = require('.')

@@ -13,7 +13,6 @@ const Artifacts = require('./artifacts')
 const init = async (config) => {
   const server = Hapi.server(config.hapi)
   const api = APIClient(config.gitlab)
-  const artifacts = Artifacts(api, config.artifacts)
 
   await server.register({
     plugin: require('hapi-pino'),
@@ -24,50 +23,62 @@ const init = async (config) => {
     plugin: require('inert')
   })
 
-  server.route({
-    method: 'GET',
-    path: '/{param*}',
-    handler: async (request, h) => {
-      let latestDir
-      try {
-        latestDir = await artifacts.getLatestDir()
-      } catch (e) {
-        log.error(e)
-        return Boom.boomify(e, {statusCode: 503})
-      }
-      let p = path.join(latestDir, request.path)
-      return h.file(p, {confine: false})
-    }
-  })
+  config.artifacts.forEach(({artifactConfig, accessConfig}) => {
+    const artifacts = Artifacts(api, artifactConfig)
 
-  if (config.artifacts.webhook) {
+    const b64accessAuth = accessConfig.token ? Buffer.from(accessConfig.token + ':').toString('base64') : false
+    const b64webhookAuth = accessConfig.webhook ? Buffer.from(accessConfig.webhook + ':').toString('base64') : false
+    const prefix = accessConfig.prefix || '/'
+
     server.route({
       method: 'GET',
-      path: '/checkUpdate',
+      path: prefix + '{param*}',
       config: {
-        handler: async (h, request) => {
-          try {
-            await artifacts.main()
-          } catch (e) {
-            log.error(e)
-            return {
-              statusCode: 500,
-              error: 'Internal Server Error',
-              message: e.toString()
+        handler: async (request, h) => {
+          if (b64accessAuth) {
+            if (request.headers.authorization !== b64accessAuth) {
+              return Boom.forbidden('invalid authorization header')
             }
           }
-        },
-        validate: {
-          headers: {
-            'x-secret': Joi.string().required().regex(new RegExp('^' + config.artifacts.webhook + '$'))
-          },
-          options: {
-            allowUnknown: true
+
+          let latestDir
+          try {
+            latestDir = await artifacts.getLatestDir()
+          } catch (e) {
+            log.error(e)
+            return Boom.boomify(e, {statusCode: 503})
           }
+          let p = path.join(latestDir, request.path.replace(prefix, ''))
+          return h.file(p, {confine: false})
         }
       }
     })
-  }
+
+    if (b64webhookAuth) {
+      server.route({
+        method: 'GET',
+        path: prefix + 'checkUpdate',
+        config: {
+          handler: async (h, request) => {
+            if (request.headers.authorization !== b64webhookAuth) {
+              return Boom.forbidden('invalid authorization header')
+            }
+
+            try {
+              await artifacts.main()
+            } catch (e) {
+              log.error(e)
+              return {
+                statusCode: 500,
+                error: 'Internal Server Error',
+                message: e.toString()
+              }
+            }
+          }
+        }
+      })
+    }
+  })
 
   await server.start()
 }

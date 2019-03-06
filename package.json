@@ -7,7 +7,7 @@
     "gitlab-artifacts-server": "src/bin.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test/**/*.js"
   },
   "keywords": [
     "gitlab",
@@ -17,17 +17,20 @@
   "author": "Maciej Krüger <mkg20001@gmail.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "debug": "^4.1.0",
-    "hapi": "^17.6.0",
-    "hapi-pino": "^5.1.0",
-    "inert": "^5.1.0",
+    "debug": "^4.1.1",
+    "hapi": "^18.1.0",
+    "hapi-pino": "^5.4.1",
+    "inert": "^5.1.2",
     "mkdirp": "^0.5.1",
-    "node-fetch": "^2.2.0",
-    "rimraf": "^2.6.2",
+    "node-fetch": "^2.3.0",
+    "rimraf": "^2.6.3",
     "unzip-stream": "^0.3.0",
-    "yargs": "^12.0.2"
+    "yargs": "^13.2.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "http-server": "^0.11.1",
+    "mocha": "^5.2.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mkg20001/gitlab-artifacts-server.git"
